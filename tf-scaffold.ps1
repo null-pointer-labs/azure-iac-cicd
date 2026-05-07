@@ -905,38 +905,48 @@ function Invoke-Main {
     
     # Generate main.tf
     Write-ColorOutput "  -> Assembling main.tf..." -Color $Colors.Cyan
-    New-MainTf (Join-Path $outputDir "main.tf")
+    $mainTfPath = Join-Path $outputDir "main.tf"
+    New-MainTf -OutputFile $mainTfPath
     
     # Generate variables.tf
     Write-ColorOutput "  -> Assembling variables.tf..." -Color $Colors.Cyan
-    New-VariablesTf (Join-Path $outputDir "variables.tf")
+    $variablesTfPath = Join-Path $outputDir "variables.tf"
+    New-VariablesTf -OutputFile $variablesTfPath
     
     # Generate terraform.tfvars
     Write-ColorOutput "  -> Assembling terraform.tfvars..." -Color $Colors.Cyan
-    New-TerraformTfvars (Join-Path $outputDir "terraform.tfvars")
+    $tfvarsPath = Join-Path $outputDir "terraform.tfvars"
+    New-TerraformTfvars -OutputFile $tfvarsPath
     
     # Generate backend.tf
-    if (Test-Path (Join-Path $BASE_TEMPLATES "backend.tf")) {
+    $backendTfTemplate = Join-Path $BASE_TEMPLATES "backend.tf"
+    if (Test-Path $backendTfTemplate) {
         Write-ColorOutput "  -> Generating backend.tf..." -Color $Colors.Cyan
-        New-BackendTf (Join-Path $outputDir "backend.tf")
+        $backendTfPath = Join-Path $outputDir "backend.tf"
+        New-BackendTf -OutputFile $backendTfPath
     }
     
     # Generate backend.hcl
-    if (Test-Path (Join-Path $BASE_TEMPLATES "backend.hcl")) {
+    $backendHclTemplate = Join-Path $BASE_TEMPLATES "backend.hcl"
+    if (Test-Path $backendHclTemplate) {
         Write-ColorOutput "  -> Generating backend.hcl..." -Color $Colors.Cyan
-        New-BackendHcl (Join-Path $outputDir "backend.hcl")
+        $backendHclPath = Join-Path $outputDir "backend.hcl"
+        New-BackendHcl -OutputFile $backendHclPath
     }
     
     # Generate backend.hcl.example
-    if (Test-Path (Join-Path $BASE_TEMPLATES "backend.hcl")) {
+    if (Test-Path $backendHclTemplate) {
         Write-ColorOutput "  -> Generating backend.hcl.example..." -Color $Colors.Cyan
-        New-BackendHclExample (Join-Path $outputDir "backend.hcl.example")
+        $backendHclExamplePath = Join-Path $outputDir "backend.hcl.example"
+        New-BackendHclExample -OutputFile $backendHclExamplePath
     }
     
     # Generate providers.tf
-    if (Test-Path (Join-Path $BASE_TEMPLATES "providers.tf")) {
+    $providersTfTemplate = Join-Path $BASE_TEMPLATES "providers.tf"
+    if (Test-Path $providersTfTemplate) {
         Write-ColorOutput "  -> Generating providers.tf..." -Color $Colors.Cyan
-        New-ProvidersTf (Join-Path $outputDir "providers.tf")
+        $providersTfPath = Join-Path $outputDir "providers.tf"
+        New-ProvidersTf -OutputFile $providersTfPath
     }
     
     # Print summary
