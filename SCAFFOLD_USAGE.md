@@ -50,7 +50,7 @@ TENANT_ID="your-tenant-id"
 LOCATION="Southeast Asia"
 
 # Backend Configuration (where Terraform state is stored)
-BACKEND_SUBSCRIPTION_ID="your-workload-subscription-id"
+BACKEND_SUBSCRIPTION_ID="your-backend-subscription-id"
 BACKEND_RESOURCE_GROUP="rg-tfstate-mgmt"
 BACKEND_STORAGE_ACCOUNT="sttfstatemgmt001"
 BACKEND_CONTAINER="tfstate"
