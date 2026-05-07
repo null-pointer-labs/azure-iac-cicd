@@ -1,0 +1,157 @@
+# ===================================================================
+# Terraform Variables Example - Private DNS Configuration Scenarios
+# ===================================================================
+# This file demonstrates two configuration scenarios for Private DNS:
+# 
+# SCENARIO 1: Cross-Subscription DNS (use_existing_private_dns = true)
+#   - Private DNS Zones exist in a separate DNS/HUB subscription
+#   - Managed by network team or centralized DNS management
+#   - Requires dns_subscription_id and appropriate RBAC permissions
+# 
+# SCENARIO 2: Standalone DNS (use_existing_private_dns = false)
+#   - Create Private DNS Zones in the same subscription as services
+#   - Simpler setup, no cross-subscription complexity
+#   - Suitable for single-subscription or isolated environments
+# ===================================================================
+
+# ===================================================================
+# Core Configuration (Required for All Scenarios)
+# ===================================================================
+
+project_name = "myproject"
+environment  = "dev"
+location     = "Southeast Asia"
+
+# Workload subscription where service resources deploy
+workload_subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Replace with your workload subscription ID
+tenant_id                = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" # Replace with your Azure AD tenant ID
+
+# Network Configuration
+vnet_address_space         = ["10.10.0.0/16"]
+pe_subnet_address_prefixes = ["10.10.2.0/24"] # Subnet for Private Endpoints
+
+# Resource Tags
+tags = {
+  Environment = "DEV"
+  Project     = "MyProject"
+  ManagedBy   = "Terraform"
+}
+
+# ===================================================================
+# SCENARIO 1: Cross-Subscription DNS Configuration
+# ===================================================================
+# Use when Private DNS Zones are centrally managed in a separate subscription
+# Uncomment these variables to enable cross-subscription DNS mode
+# ===================================================================
+
+use_existing_private_dns = true
+
+# DNS subscription configuration (required when use_existing_private_dns = true)
+dns_subscription_id = "zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz" # Replace with your DNS subscription ID
+dns_zone_rg         = "rg-dns-hub-prod"                       # Resource Group containing Private DNS Zones
+
+# Prerequisites for cross-subscription DNS:
+# 1. Private DNS Zones already exist in dns_subscription_id
+#    Example zones to pre-create:
+#    - privatelink.azurecr.io                  (Azure Container Registry)
+#    - privatelink.vaultcore.azure.net         (Azure Key Vault)
+#    - privatelink.mongo.cosmos.azure.com      (Cosmos DB - MongoDB)
+#    - privatelink.documents.azure.com         (Cosmos DB - SQL API)
+#    - privatelink.blob.core.windows.net       (Storage Blob)
+#    - privatelink.servicebus.windows.net      (Service Bus)
+# 
+# 2. VNet Links exist between DNS Zones and hub VNet
+# 
+# 3. VNet peering configured between:
+#    - Workload VNet (this deployment) ←→ DNS Hub VNet
+# 
+# 4. RBAC permissions in DNS subscription:
+#    - Terraform service principal needs "Private DNS Zone Contributor" role
+#    - Or "DNS Zone Contributor" + "Reader" roles
+
+# ===================================================================
+# SCENARIO 2: Standalone DNS Configuration
+# ===================================================================
+# Use when Private DNS Zones are created in the same subscription as services
+# Simpler setup, suitable for isolated or single-subscription environments
+# ===================================================================
+
+# use_existing_private_dns = false
+# 
+# # DNS resource group (created in workload subscription, same as services)
+# dns_zone_rg = "rg-myproject-dev-dns"
+# 
+# # Note: dns_subscription_id is NOT required in standalone mode
+# # Private DNS Zones are automatically created in workload_subscription_id
+# # VNet Links are automatically created between DNS Zones and workload VNet
+
+# ===================================================================
+# Service-Specific Configuration Examples
+# ===================================================================
+# Each service module creates its own Private Endpoint and calls the
+# appropriate DNS module based on use_existing_private_dns flag
+# ===================================================================
+
+# Azure Container Registry (ACR)
+acr_name                    = "myacrdev"
+acr_sku                     = "Premium" # Premium required for Private Endpoints
+acr_enable_private_endpoint = true
+# DNS zone used: privatelink.azurecr.io
+
+# Azure Key Vault
+keyvault_name                    = "kv-myproject-dev"
+keyvault_sku                     = "standard"
+keyvault_enable_private_endpoint = true
+# DNS zone used: privatelink.vaultcore.azure.net
+
+# Azure Cosmos DB (MongoDB API)
+cosmosdb_account_name                  = "cosmos-myproject-dev"
+cosmosdb_throughput_mode               = "autoscale"
+cosmosdb_max_throughput                = 97000
+cosmosdb_mongo_server_version          = "6.0"
+cosmosdb_enable_analytical_storage     = true
+cosmosdb_backup_type                   = "Periodic"
+cosmosdb_backup_interval_minutes       = 240
+cosmosdb_backup_retention_hours        = 720
+cosmosdb_backup_storage_redundancy     = "Geo"
+cosmosdb_enable_private_endpoint       = true
+cosmosdb_public_network_access_enabled = false
+# DNS zone used: privatelink.mongo.cosmos.azure.com
+
+# ===================================================================
+# Network Peering Notes (Cross-Subscription DNS Only)
+# ===================================================================
+# When use_existing_private_dns = true, ensure VNet peering is configured:
+# 
+# Workload VNet → DNS Hub VNet:
+#   - Peering Name: peer-workload-to-hub
+#   - Allow forwarded traffic: Yes
+#   - Allow gateway transit: No (or Yes if hub has VPN/ExpressRoute)
+# 
+# DNS Hub VNet → Workload VNet:
+#   - Peering Name: peer-hub-to-workload
+#   - Allow forwarded traffic: Yes
+#   - Use remote gateways: No (or Yes if hub has VPN/ExpressRoute)
+# 
+# These peerings are NOT managed by this Terraform configuration.
+# Configure manually or via separate network automation.
+# ===================================================================
+
+# ===================================================================
+# Quick Decision Guide
+# ===================================================================
+# 
+# Use Cross-Subscription DNS (use_existing_private_dns = true) when:
+# ✓ Organization has centralized DNS management
+# ✓ Hub-spoke network architecture is in place
+# ✓ Multiple subscriptions share DNS zones
+# ✓ Network team manages DNS infrastructure
+# ✓ Compliance requires centralized DNS governance
+# 
+# Use Standalone DNS (use_existing_private_dns = false) when:
+# ✓ Single subscription deployment
+# ✓ Isolated environment (dev/test)
+# ✓ Simpler setup preferred
+# ✓ No existing DNS hub infrastructure
+# ✓ Full autonomy over DNS management
+# ===================================================================
