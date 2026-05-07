@@ -89,22 +89,22 @@ function Write-ColorOutput {
 
 function Write-Success {
     param([string]$Message)
-    Write-ColorOutput "✓ $Message" -Color $Colors.Green
+    Write-ColorOutput "[OK] $Message" -Color $Colors.Green
 }
 
 function Write-Warning {
     param([string]$Message)
-    Write-ColorOutput "ℹ $Message" -Color $Colors.Yellow
+    Write-ColorOutput "[INFO] $Message" -Color $Colors.Yellow
 }
 
 function Write-Error {
     param([string]$Message)
-    Write-ColorOutput "✗ $Message" -Color $Colors.Red
+    Write-ColorOutput "[X] $Message" -Color $Colors.Red
 }
 
 function Write-Info {
     param([string]$Message)
-    Write-ColorOutput "• $Message" -Color $Colors.Cyan
+    Write-ColorOutput "  - $Message" -Color $Colors.Cyan
 }
 
 # ===================================================================
@@ -174,9 +174,9 @@ function Load-EnvFile {
 # ===================================================================
 
 function Show-ModuleSelector {
-    Write-ColorOutput "═══════════════════════════════════════════════════" -Color $Colors.Cyan
+    Write-ColorOutput "===================================================" -Color $Colors.Cyan
     Write-ColorOutput "  Terraform Environment Scaffolder" -Color $Colors.Cyan
-    Write-ColorOutput "═══════════════════════════════════════════════════" -Color $Colors.Cyan
+    Write-ColorOutput "===================================================" -Color $Colors.Cyan
     Write-Host ""
     Write-Host "Available modules:" -ForegroundColor White
     Write-Host ""
@@ -735,29 +735,29 @@ provider "azurerm" {
 
 function Show-GenerationSummary {
     Write-Host ""
-    Write-ColorOutput "═══════════════════════════════════════════════════" -Color $Colors.Blue
+    Write-ColorOutput "===================================================" -Color $Colors.Blue
     Write-ColorOutput "  Generation Summary" -Color $Colors.Blue
-    Write-ColorOutput "═══════════════════════════════════════════════════" -Color $Colors.Blue
+    Write-ColorOutput "===================================================" -Color $Colors.Blue
     Write-Host ""
     Write-Host "Source:       $TEMPLATES_DIR/"
     Write-Host "Target:       projects/$script:PROJECT_NAME-$script:ENV_NAME/"
     Write-Host ""
     Write-Host "Substitutions applied:"
-    Write-Host "  • " -NoNewline
+    Write-Host "  - " -NoNewline
     Write-ColorOutput "__PROJECT_NAME__" -Color $Colors.Yellow -NoNewline
-    Write-Host " → " -NoNewline
+    Write-Host " -> " -NoNewline
     Write-ColorOutput $script:PROJECT_NAME -Color $Colors.Green
-    Write-Host "  • " -NoNewline
+    Write-Host "  - " -NoNewline
     Write-ColorOutput "__ENV_NAME__" -Color $Colors.Yellow -NoNewline
-    Write-Host " → " -NoNewline
+    Write-Host " -> " -NoNewline
     Write-ColorOutput $script:ENV_NAME -Color $Colors.Green
-    Write-Host "  • " -NoNewline
+    Write-Host "  - " -NoNewline
     Write-ColorOutput "__ENV_NAME_UPPER__" -Color $Colors.Yellow -NoNewline
-    Write-Host " → " -NoNewline
+    Write-Host " -> " -NoNewline
     Write-ColorOutput $script:ENV_NAME_UPPER -Color $Colors.Green
-    Write-Host "  • " -NoNewline
+    Write-Host "  - " -NoNewline
     Write-ColorOutput "__DATE__" -Color $Colors.Yellow -NoNewline
-    Write-Host " → " -NoNewline
+    Write-Host " -> " -NoNewline
     Write-ColorOutput $script:CURRENT_DATE -Color $Colors.Green
     Write-Host ""
     Write-Host "Modules included:"
@@ -852,7 +852,7 @@ function Invoke-Main {
     
     Write-Success "Selected modules:"
     foreach ($mod in $script:SELECTED_MODULES) {
-        Write-Host "  • $mod"
+        Write-Host "  - $mod"
     }
     Write-Host ""
     
@@ -871,14 +871,14 @@ function Invoke-Main {
             # Cross-subscription mode: .env has both DNS values
             $script:USE_EXISTING_PRIVATE_DNS = $true
             Write-Success "Detected Cross-Subscription DNS mode from .env"
-            Write-Host "  • DNS Subscription: $($script:DNS_SUBSCRIPTION_ID.Substring(0, [Math]::Min(8, $script:DNS_SUBSCRIPTION_ID.Length)))..."
-            Write-Host "  • DNS Resource Group: $script:DNS_ZONE_RG"
+            Write-Host "  - DNS Subscription: $($script:DNS_SUBSCRIPTION_ID.Substring(0, [Math]::Min(8, $script:DNS_SUBSCRIPTION_ID.Length)))..."
+            Write-Host "  - DNS Resource Group: $script:DNS_ZONE_RG"
         } else {
             # Standalone mode: No DNS values in .env
             $script:USE_EXISTING_PRIVATE_DNS = $false
             $script:DNS_ZONE_RG = "rg-$script:PROJECT_NAME-$script:ENV_NAME-dns"
             Write-Success "Using Standalone DNS mode (no DNS config in .env)"
-            Write-Host "  • DNS Resource Group: $script:DNS_ZONE_RG"
+            Write-Host "  - DNS Resource Group: $script:DNS_ZONE_RG"
         }
         Write-Host ""
     }
@@ -904,38 +904,38 @@ function Invoke-Main {
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     
     # Generate main.tf
-    Write-ColorOutput "  → Assembling main.tf..." -Color $Colors.Cyan
+    Write-ColorOutput "  -> Assembling main.tf..." -Color $Colors.Cyan
     New-MainTf (Join-Path $outputDir "main.tf")
     
     # Generate variables.tf
-    Write-ColorOutput "  → Assembling variables.tf..." -Color $Colors.Cyan
+    Write-ColorOutput "  -> Assembling variables.tf..." -Color $Colors.Cyan
     New-VariablesTf (Join-Path $outputDir "variables.tf")
     
     # Generate terraform.tfvars
-    Write-ColorOutput "  → Assembling terraform.tfvars..." -Color $Colors.Cyan
+    Write-ColorOutput "  -> Assembling terraform.tfvars..." -Color $Colors.Cyan
     New-TerraformTfvars (Join-Path $outputDir "terraform.tfvars")
     
     # Generate backend.tf
     if (Test-Path (Join-Path $BASE_TEMPLATES "backend.tf")) {
-        Write-ColorOutput "  → Generating backend.tf..." -Color $Colors.Cyan
+        Write-ColorOutput "  -> Generating backend.tf..." -Color $Colors.Cyan
         New-BackendTf (Join-Path $outputDir "backend.tf")
     }
     
     # Generate backend.hcl
     if (Test-Path (Join-Path $BASE_TEMPLATES "backend.hcl")) {
-        Write-ColorOutput "  → Generating backend.hcl..." -Color $Colors.Cyan
+        Write-ColorOutput "  -> Generating backend.hcl..." -Color $Colors.Cyan
         New-BackendHcl (Join-Path $outputDir "backend.hcl")
     }
     
     # Generate backend.hcl.example
     if (Test-Path (Join-Path $BASE_TEMPLATES "backend.hcl")) {
-        Write-ColorOutput "  → Generating backend.hcl.example..." -Color $Colors.Cyan
+        Write-ColorOutput "  -> Generating backend.hcl.example..." -Color $Colors.Cyan
         New-BackendHclExample (Join-Path $outputDir "backend.hcl.example")
     }
     
     # Generate providers.tf
     if (Test-Path (Join-Path $BASE_TEMPLATES "providers.tf")) {
-        Write-ColorOutput "  → Generating providers.tf..." -Color $Colors.Cyan
+        Write-ColorOutput "  -> Generating providers.tf..." -Color $Colors.Cyan
         New-ProvidersTf (Join-Path $outputDir "providers.tf")
     }
     
@@ -943,12 +943,13 @@ function Invoke-Main {
     Show-GenerationSummary
     
     # Step 7: Success summary
-    Write-ColorOutput "✓ Environment scaffolded successfully!" -Color $Colors.Green
+    Write-ColorOutput "[SUCCESS] Environment scaffolded successfully!" -Color $Colors.Green
     Write-Host ""
     Write-Host "Created files in $outputDir/"
     Get-ChildItem $outputDir -File | ForEach-Object {
         $lineCount = (Get-Content $_.FullName | Measure-Object -Line).Lines
-        Write-Success ("{0} ({1} lines)" -f $_.Name, $lineCount)
+        $fileName = $_.Name
+        Write-Success "$fileName ($lineCount lines)"
     }
     Write-Host ""
     Write-Host "Next steps:"
@@ -969,6 +970,7 @@ function Invoke-Main {
 try {
     Invoke-Main
 } catch {
-    Write-ColorOutput "✗ An error occurred: $($_.Exception.Message)" -Color $Colors.Red
+    $errorMsg = $_.Exception.Message
+    Write-ColorOutput "[ERROR] An error occurred: $errorMsg" -Color $Colors.Red
     exit 1
 }
