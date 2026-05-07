@@ -106,7 +106,7 @@ Generating configuration from UAT template...
 
 ✓ Environment scaffolded successfully!
 
-Created files in environments/cics-dev/
+Created files in projects/cics-dev/
   ✓ main.tf (187 lines)
   ✓ variables.tf (95 lines)
   ✓ terraform.tfvars (142 lines)
@@ -179,7 +179,7 @@ acr_enable_private_endpoint = true
 ### 1. Review Files
 
 ```bash
-cd environments/<env-name>
+cd projects/<project-env>
 cat terraform.tfvars
 ```
 
@@ -218,7 +218,7 @@ Enter module numbers: all
 
 If the directory exists, the script will ask:
 ```
-Warning: Directory 'environments/cics-dev' already exists
+Warning: Directory 'projects/cics-dev' already exists
 Overwrite? (y/N):
 ```
 
@@ -234,9 +234,9 @@ If UAT template files are missing:
 
 ### UAT Template Not Found
 
-Ensure UAT environment exists:
+Ensure UAT template exists in the projects folder (or use an existing project as template):
 ```bash
-ls environments/uat/
+ls projects/myapp-uat/
 ```
 
 Expected files:

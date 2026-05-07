@@ -15,8 +15,8 @@ This repository contains Terraform configurations for deploying Azure infrastruc
 │       ├── main.tf              # ACR, Private Endpoint, Private DNS Zone
 │       ├── variables.tf         # Module input variables
 │       └── outputs.tf           # Module outputs
-├── environments/
-│   └── uat/                     # UAT environment configuration
+├── projects/
+│   └── myapp-uat/               # Example project environment
 │       ├── main.tf              # Resource Group, VNet, Subnets, and module calls
 │       ├── variables.tf         # Environment input variables
 │       ├── providers.tf         # Provider and version configuration
@@ -68,7 +68,7 @@ Resource Group (per environment)
 ```
 
 **Key Concepts**:
-- **Environment-scoped resources** (created directly in `environments/<env>/main.tf`):
+- **Environment-scoped resources** (created directly in `projects/<project-env>/main.tf`):
   - Resource Group
   - Virtual Network
   - Subnets (VM subnet, PE subnet)
@@ -208,9 +208,9 @@ To avoid repeatedly entering subscription IDs, tenant IDs, and backend configura
 ### Authentication Options
 ### Standard Workflow
 
-1. **Navigate to the UAT environment directory**
+1. **Navigate to your project directory**
    ```bash
-   cd environments/uat
+   cd projects/myapp-uat
    ```
 
 2. **Initialize Terraform with Backend Configuration**
@@ -282,13 +282,13 @@ az role assignment create \
 
 #### 2. Configure Backend Settings
 
-Edit `environments/uat/backend.hcl` with your actual values:
+Edit `projects/myapp-uat/backend.hcl` with your actual values:
 
 ```hcl
 resource_group_name  = "rg-tfstate-mgmt"
 storage_account_name = "sttfstatemgmt001"
 container_name       = "tfstate"
-key                  = "uat/terraform.tfstate"
+key                  = "myapp-uat/terraform.tfstate"
 subscription_id      = "<MANAGEMENT_SUBSCRIPTION_ID>"
 tenant_id            = "<TENANT_ID>"
 ```
@@ -302,7 +302,7 @@ ssh-keygen -t rsa -b 4096 -C "your-email@example.com" -f ~/.ssh/azure_vm_key
 
 #### 4. Update terraform.tfvars
 
-Edit `environments/uat/terraform.tfvars`:
+Edit `projects/myapp-uat/terraform.tfvars`:
 - `workload_subscription_id`: Your workload subscription ID
 - `tenant_id`: Your Azure AD tenant ID
 - `ssh_public_key`: Contents of `~/.ssh/azure_vm_key.pub`
@@ -313,7 +313,7 @@ Edit `environments/uat/terraform.tfvars`:
 
 1. **Navigate to the UAT environment directory**
    ```bash
-   cd environments/uat
+   cd projects/myapp-uat
    ```
 
 2. **Update terraform.tfvars**
@@ -363,14 +363,20 @@ Edit `environments/uat/terraform.tfvars`:
 
 To add a new environment (e.g., `dev` or `prod`):
 
-1. **Copy the UAT environment**
+1. **Use the scaffold script** (recommended)
    ```bash
-   cp -r environments/uat environments/dev
+   ./tf-scaffold.sh
+   # Select project name and environment
+   ```
+
+   Or **copy manually**:
+   ```bash
+   cp -r projects/myapp-uat projects/myapp-dev
    ```
 
 2. **Update environment-specific files**
    
-   In `environments/dev/`:
+   In `projects/myapp-dev/`:
    
    a. **terraform.t       = "myproject"
       environment         = "dev"
@@ -447,7 +453,7 @@ terraform apply
 
 ### Adding Worker Nodes or Different VM Groups
 
-In `environments/<env>/main.tf`, add additional module blocks for different roles:
+In `projects/<project-env>/main.tf`, add additional module blocks for different roles:
 
 ```hcl
 module "worker_nodes" {
@@ -518,7 +524,7 @@ module "system_nodes" {
 
 ### Adding Additional Subnets
 
-In `environments/<env>/main.tf`:
+In `projects/<project-env>/main.tf`:
 ```hcl
 resource "azurerm_subnet" "additional" {
   name                 = "snet-${var.project_name}-${var.environment}-app"
@@ -533,7 +539,7 @@ resource "azurerm_subnet" "additional" {
 To add a new PaaS service (e.g., Storage Account, AKS, PostgreSQL) that uses Private Endpoints:
 
 1. **Create or use a module** that accepts `pe_subnet_id` and `vnet_id`
-2. **Call the module** in `environments/<env>/main.tf` passing the PE subnet:
+2. **Call the module** in `projects/<project-env>/main.tf` passing the PE subnet:
 
 ```hcl
 module "storage_account" {
@@ -583,7 +589,7 @@ module "storage_account" {
    - No data exfiltration risk through public internet
    - Update `acr_public_network_access_enabled = false` in `terraform.tfvars` to enforce
 
-2. **SSH Access**: Update the NSG rule in [environments/uat/main.tf](environments/uat/main.tf) to restrict SSH access:
+2. **SSH Access**: Update the NSG rule in your project's `main.tf` to restrict SSH access:
    ```hcl
    source_address_prefix = "YOUR_IP_ADDRESS/32"  # Instead of "*"
    ```
@@ -620,7 +626,7 @@ module "storage_account" {
 To destroy all resources in an environment:
 
 ```bash
-cd environments/uat
+cd projects/myapp-uat
 terraform destroy -var-file=terraform.tfvars
 ```
 
@@ -757,7 +763,7 @@ az account set --subscription "<workload-subscription-id>"
 To destroy all resources in an environment:
 
 ```bash
-cd environments/uat
+cd projects/myapp-uat
 terraform destroy
 ```
 

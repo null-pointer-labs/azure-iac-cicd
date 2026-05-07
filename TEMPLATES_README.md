@@ -60,25 +60,25 @@ Script prompts for:
 The script concatenates template files:
 
 ```bash
-# main.tf assembly
-cat templates/base/main.tf                > environments/cics-dev/main.tf
-cat templates/modules/azure-acr/main.tf  >> environments/cics-dev/main.tf
-cat templates/modules/azure-aks/main.tf  >> environments/cics-dev/main.tf
-cat templates/modules/azure-keyvault/main.tf >> environments/cics-dev/main.tf
+# main.tf (assembly of base + modules)
+cat templates/base/main.tf                > projects/cics-dev/main.tf
+cat templates/modules/azure-acr/main.tf  >> projects/cics-dev/main.tf
+cat templates/modules/azure-aks/main.tf  >> projects/cics-dev/main.tf
+cat templates/modules/azure-keyvault/main.tf >> projects/cics-dev/main.tf
 
-# terraform.tfvars assembly
-cat templates/base/terraform.tfvars                > environments/cics-dev/terraform.tfvars
-cat templates/modules/azure-acr/terraform.tfvars  >> environments/cics-dev/terraform.tfvars
-cat templates/modules/azure-aks/terraform.tfvars  >> environments/cics-dev/terraform.tfvars
-cat templates/modules/azure-keyvault/terraform.tfvars >> environments/cics-dev/terraform.tfvars
+# terraform.tfvars (assembly of base + modules)
+cat templates/base/terraform.tfvars                > projects/cics-dev/terraform.tfvars
+cat templates/modules/azure-acr/terraform.tfvars  >> projects/cics-dev/terraform.tfvars
+cat templates/modules/azure-aks/terraform.tfvars  >> projects/cics-dev/terraform.tfvars
+cat templates/modules/azure-keyvault/terraform.tfvars >> projects/cics-dev/terraform.tfvars
 
-# variables.tf assembly
-cat templates/base/variables.tf                > environments/cics-dev/variables.tf
-cat templates/modules/azure-acr/variables.tf  >> environments/cics-dev/variables.tf
-# (and so on for selected modules)
+# variables.tf (assembly of base + modules)
+cat templates/base/variables.tf                > projects/cics-dev/variables.tf
+cat templates/modules/azure-acr/variables.tf  >> projects/cics-dev/variables.tf
+# ...
 
 # backend.tf (direct copy with substitutions)
-cat templates/base/backend.tf > environments/cics-dev/backend.tf
+cat templates/base/backend.tf > projects/cics-dev/backend.tf
 ```
 
 ### 3. Placeholder Substitution
@@ -225,7 +225,7 @@ Generating configuration from templates...
 
 ✓ Environment scaffolded successfully!
 
-Created files in environments/dev/
+Created files in projects/dev/
   ✓ main.tf (112 lines)
   ✓ variables.tf (78 lines)
   ✓ terraform.tfvars (95 lines)

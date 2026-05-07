@@ -1,13 +1,13 @@
 # Terraform Scaffold Script - Rewrite Summary
 
 ## Overview
-Rewrote `tf-scaffold.sh` to use the existing UAT environment as a template instead of hardcoded boilerplate.
+Rewrote `tf-scaffold.sh` to use existing projects as templates instead of hardcoded boilerplate.
 
 ## Changes Made
 
 ### 1. **Template-Based Approach**
-- Script now reads from `environments/uat/` directory as the source template
-- Falls back to minimal hardcoded templates if UAT files don't exist
+- Script now reads from existing project directories (e.g., `projects/myapp-uat/`) as the source template
+- Falls back to minimal hardcoded templates if source files don't exist
 
 ### 2. **New Workflow**
 ```
@@ -19,14 +19,14 @@ Rewrote `tf-scaffold.sh` to use the existing UAT environment as a template inste
 
 ### 3. **File Generation Strategy**
 
-#### **environments/<env>/main.tf**
-- Copies from `environments/uat/main.tf`
+#### **projects/<project-env>/main.tf**
+- Copies from source project (e.g., `projects/myapp-uat/main.tf`)
 - Replaces all occurrences of "uat" → new environment name
 - Filters out module blocks for unselected modules
 - Keeps terraform{}, provider{}, resource_group, VNet, subnet blocks
 
-#### **environments/<env>/terraform.tfvars**
-- Copies from `environments/uat/terraform.tfvars`
+#### **projects/<project-env>/terraform.tfvars**
+- Copies from source project (e.g., `projects/myapp-uat/terraform.tfvars`)
 - Replaces "uat" → new env name
 - Replaces project_name value
 - For each selected module:
@@ -35,12 +35,12 @@ Rewrote `tf-scaffold.sh` to use the existing UAT environment as a template inste
   - Pre-populates defaults when available
   - Pre-populates project_name/environment references
 
-#### **environments/<env>/variables.tf**
-- Direct copy from `environments/uat/variables.tf`
+#### **projects/<project-env>/variables.tf**
+- Direct copy from source project (e.g., `projects/myapp-uat/variables.tf`)
 - No substitutions needed (shared structure)
 
-#### **environments/<env>/backend.tf**
-- Copies from `environments/uat/backend.tf` (if exists)
+#### **projects/<project-env>/backend.tf**
+- Copies from source project (e.g., `projects/myapp-uat/backend.tf`) if exists
 - Replaces "uat" → new env name
 
 #### **Additional Files**
@@ -88,7 +88,7 @@ Rewrote `tf-scaffold.sh` to use the existing UAT environment as a template inste
 
 **Output:**
 ```
-environments/cics-dev/
+projects/cics-dev/
   ✓ main.tf (187 lines)
   ✓ variables.tf (95 lines)
   ✓ terraform.tfvars (142 lines)
@@ -117,8 +117,8 @@ To test the script:
 # Enter: testproject, test-env, modules: 1 2
 
 # Verify output
-ls -la environments/test-env/
-cat environments/test-env/terraform.tfvars
+ls -la projects/test-env/
+cat projects/test-env/terraform.tfvars
 ```
 
 ## Notes

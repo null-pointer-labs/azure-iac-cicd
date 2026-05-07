@@ -1,248 +1,162 @@
-# Quick Start Guide - Komopro Terraform Project
+# Quick Start Guide
 
-## 🎯 Cross-Subscription Architecture
+## Prerequisites
 
-```
-┌─────────────────────────────────────────────────┐
-│     Management Subscription                     │
-│  ┌─────────────────────────────────────────┐   │
-│  │  Azure Storage Account                  │   │
-│  │  - State files for all environments     │   │
-│  │  - Azure AD authentication              │   │
-│  │  - RBAC: Storage Blob Data Contributor  │   │
-│  └─────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────┘
-                       ↓
-                  State Storage
-                       ↓
-┌─────────────────────────────────────────────────┐
-│     Workload Subscription                       │
-│  ┌───────────────────────────────────────────┐ │
-│  │  Environment: UAT                         │ │
-│  │  - Resource Group: rg-komopro-uat         │ │
-│  │  - VNet: vnet-komopro-uat                 │ │
-│  │  - VMs: vm-komopro-uat-sys-01, -02        │ │
-│  │  - Data Disks: 256 GiB StandardSSD        │ │
-│  └───────────────────────────────────────────┘ │
-│                                                 │
-│  ┌───────────────────────────────────────────┐ │
-│  │  Environment: Dev (future)                │ │
-│  └───────────────────────────────────────────┘ │
-│                                                 │
-│  ┌───────────────────────────────────────────┐ │
-│  │  Environment: Prod (future)               │ │
-│  └───────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────┘
-```
-
-## ⚡ Prerequisites Checklist
-
-- [ ] Terraform >= 1.5.0 installed
-- [ ] Azure CLI >= 2.50.0 installed
-- [ ] Two Azure subscriptions identified:
-  - [ ] Management subscription ID
-  - [ ] Workload subscription ID
-- [ ] Azure AD tenant ID
-- [ ] SSH key pair generated (`ssh-keygen -t rsa -b 4096`)
-
-## 🔑 Required RBAC Permissions
-
-### Your Identity Needs:
-
-1. **Management Subscription**:
-   - Role: `Storage Blob Data Contributor`
-   - Scope: State storage container
-
-2. **Workload Subscription**:
-   - Role: `Contributor`
-   - Scope: Subscription or resource group level
-
-## 🚀 Deployment Steps
-
-### 1. Authenticate
 ```bash
-az login
-az account set --subscription "<workload-subscription-id>"
+# Check versions
+terraform version  # >= 1.5.0
+az version         # >= 2.50.0
 ```
 
-### 2. Configure Backend
-Edit `environments/uat/backend.hcl`:
-```hcl
-resource_group_name  = "no-security"          # Your actual RG
-storage_account_name = "egubibackendsa"       # Your actual SA
-container_name       = "egubibackendsa"       # Your actual container
-key                  = "uat/terraform.tfstate"
-subscription_id      = "<MANAGEMENT_SUB_ID>"
-tenant_id            = "<TENANT_ID>"
-```
+## 1. Create Backend Storage Account
 
-### 3. Configure Variables
-Edit `environments/uat/terraform.tfvars`:
-```hcl
-workload_subscription_id = "<WORKLOAD_SUB_ID>"
-tenant_id                = "<TENANT_ID>"
-ssh_public_key           = "ssh-rsa AAAA..."  # From ~/.ssh/id_rsa.pub
-```
-
-### 4. Deploy
 ```bash
-cd environments/uat
+# Variables
+MGMT_SUB_ID="your-management-subscription-id"
+WORKLOAD_SUB_ID="your-workload-subscription-id"
+TENANT_ID="your-tenant-id"
+RG_NAME="rg-tfstate-mgmt"
+SA_NAME="sttfstatemgmt001"  # Must be globally unique
+LOCATION="southeastasia"
+
+# Set subscription
+az account set --subscription "$MGMT_SUB_ID"
+
+# Create resource group
+az group create \
+  --name "$RG_NAME" \
+  --location "$LOCATION"
+
+# Create storage account
+az storage account create \
+  --name "$SA_NAME" \
+  --resource-group "$RG_NAME" \
+  --location "$LOCATION" \
+  --sku Standard_LRS \
+  --min-tls-version TLS1_2 \
+  --allow-blob-public-access false
+
+# Create container
+az storage container create \
+  --name tfstate \
+  --account-name "$SA_NAME" \
+  --auth-mode login
+
+# Grant yourself permissions
+az role assignment create \
+  --assignee $(az ad signed-in-user show --query id -o tsv) \
+  --role "Storage Blob Data Contributor" \
+  --scope "/subscriptions/$MGMT_SUB_ID/resourceGroups/$RG_NAME/providers/Microsoft.Storage/storageAccounts/$SA_NAME/blobServices/default/containers/tfstate"
+```
+
+See [BACKEND_SETUP.md](BACKEND_SETUP.md) for detailed explanation.
+
+## 2. Generate SSH Key (if needed)
+
+```bash
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/azure_vm_key
+```
+
+## 3. Create Environment with Scaffold
+
+```bash
+# Copy .env template
+cp .env.example .env
+
+# Edit .env with your values
+nano .env
+```
+
+**.env example**:
+```bash
+WORKLOAD_SUBSCRIPTION_ID="your-workload-sub-id"
+TENANT_ID="your-tenant-id"
+LOCATION="southeastasia"
+BACKEND_SUBSCRIPTION_ID="your-mgmt-sub-id"
+BACKEND_RESOURCE_GROUP="rg-tfstate-mgmt"
+BACKEND_STORAGE_ACCOUNT="sttfstatemgmt001"
+BACKEND_CONTAINER="tfstate"
+```
+
+**Run scaffold**:
+```bash
+./tf-scaffold.sh
+```
+
+Select:
+- Project name: `myapp`
+- Environment: `dev`
+- Modules: `1 3` (e.g., ACR + KeyVault)
+
+## 4. Deploy
+
+```bash
+# Navigate to generated project
+cd projects/myapp-dev
+
+# Review backend config (auto-generated from .env)
+cat backend.hcl
+
+# Initialize
 terraform init -backend-config=backend.hcl
+
+# Review changes
 terraform plan
+
+# Deploy
 terraform apply
-```
 
-## 📋 What Gets Created
-
-### Networking
-- Resource Group: `rg-komopro-uat`
-- VNet: `vnet-komopro-uat` (10.10.0.0/16)
-- Subnet: `snet-komopro-uat` (10.10.1.0/24)
-- NSG: `nsg-komopro-uat` (SSH rule)
-
-### Compute
-- **System Node 01**:
-  - VM: `vm-komopro-uat-sys-01` (Standard_F4s_v2)
-  - NIC: `nic-komopro-uat-sys-01`
-  - OS Disk: `osdisk-vm-komopro-uat-sys-01`
-  - Data Disk 01: `disk-vm-komopro-uat-sys-01-data01` (256 GiB)
-  - Data Disk 02: `disk-vm-komopro-uat-sys-01-data02` (256 GiB)
-
-- **System Node 02**:
-  - VM: `vm-komopro-uat-sys-02` (Standard_F4s_v2)
-  - NIC: `nic-komopro-uat-sys-02`
-  - OS Disk: `osdisk-vm-komopro-uat-sys-02`
-  - Data Disk 01: `disk-vm-komopro-uat-sys-02-data01` (256 GiB)
-  - Data Disk 02: `disk-vm-komopro-uat-sys-02-data02` (256 GiB)
-
-## 🔍 Outputs
-```bash
+# View outputs
 terraform output
-
-# Returns:
-# - system_node_names: ["vm-komopro-uat-sys-01", "vm-komopro-uat-sys-02"]
-# - system_node_private_ips: ["10.10.1.4", "10.10.1.5"]
-# - resource_group_name: "rg-komopro-uat"
-# - vnet_name: "vnet-komopro-uat"
 ```
 
-## 🔧 Common Operations
+## 5. Common Operations
 
-### Connect to VM
+**Add SSH key to tfvars** (if using VMs):
 ```bash
-# Get private IP
-PRIVATE_IP=$(terraform output -json system_node_private_ips | jq -r '.[0]')
-
-# SSH (if using Bastion or VPN)
-ssh -i ~/.ssh/azure_vm_key azureuser@$PRIVATE_IP
+echo "ssh_public_key = \"$(cat ~/.ssh/azure_vm_key.pub)\"" >> terraform.tfvars
 ```
 
-### Scale System Nodes
-Edit `terraform.tfvars`:
-```hcl
-system_node_count = 3  # Change from 2 to 3
-```
-
-Apply:
+**Switch subscriptions**:
 ```bash
-terraform plan
-terraform apply
+az account set --subscription "$WORKLOAD_SUB_ID"
 ```
 
-### Add Data Disks
-Edit `terraform.tfvars`:
-```hcl
-system_node_data_disks = [
-  {
-    name_suffix          = "data01"
-    disk_size_gb         = 256
-    storage_account_type = "StandardSSD_LRS"
-    lun                  = 0
-    caching              = "ReadWrite"
-  },
-  {
-    name_suffix          = "data03"        # New disk
-    disk_size_gb         = 512             # 512 GiB
-    storage_account_type = "Premium_LRS"   # Premium
-    lun                  = 2               # Unique LUN
-    caching              = "ReadWrite"
-  }
-]
-```
-
-Apply:
-```bash
-terraform apply
-```
-
-### Destroy Environment
+**Destroy environment**:
 ```bash
 terraform destroy
 ```
 
-## 🆘 Troubleshooting
-
-### Error: "Failed to get existing workspaces"
-**Cause**: Missing RBAC permissions on state storage
-
-**Fix**:
+**Create additional environment**:
 ```bash
+./tf-scaffold.sh
+# Select different environment name (e.g., 'uat')
+```
+
+## Troubleshooting
+
+**Error: Failed to get existing workspaces**
+```bash
+# Grant RBAC on state container
 az role assignment create \
   --assignee $(az ad signed-in-user show --query id -o tsv) \
   --role "Storage Blob Data Contributor" \
-  --scope "/subscriptions/<mgmt-sub>/resourceGroups/no-security/providers/Microsoft.Storage/storageAccounts/egubibackendsa/blobServices/default/containers/egubibackendsa"
+  --scope "/subscriptions/$MGMT_SUB_ID/resourceGroups/$RG_NAME/providers/Microsoft.Storage/storageAccounts/$SA_NAME/blobServices/default/containers/tfstate"
 ```
 
-### Error: "Subscription() could not be determined"
-**Cause**: Wrong subscription context
-
-**Fix**:
+**Error: Subscription() could not be determined**
 ```bash
-az account set --subscription "<workload-subscription-id>"
-terraform plan
+az account set --subscription "$WORKLOAD_SUB_ID"
 ```
 
-### Error: "State lock"
-**Cause**: Previous operation didn't complete
-
-**Fix**:
+**Stale state lock**
 ```bash
-# Check if another terraform process is running
-# If stale lock, break it:
 terraform force-unlock <lock-id>
 ```
 
-## 📖 Next Steps
+## Documentation
 
-1. **Restrict SSH Access**: Edit `environments/uat/main.tf`, change NSG rule:
-   ```hcl
-   source_address_prefix = "YOUR_IP/32"
-   ```
-
-2. **Add Dev Environment**:
-   ```bash
-   cp -r environments/uat environments/dev
-   # Edit backend.hcl, terraform.tfvars, variables.tf
-   cd environments/dev
-   terraform init -backend-config=backend.hcl
-   terraform apply
-   ```
-
-3. **Enable Monitoring**: Add Azure Monitor, Application Insights
-
-4. **Backup Configuration**: Set up Azure Backup for VMs
-
-5. **Cost Optimization**: Review VM sizes, disk types, and implement auto-shutdown
-
-## 📞 Support
-
-For detailed documentation, see [README.md](README.md)
-
-**Common Commands**:
-- Init: `terraform init -backend-config=backend.hcl`
-- Plan: `terraform plan`
-- Apply: `terraform apply`
-- Destroy: `terraform destroy`
-- Outputs: `terraform output`
-- Format: `terraform fmt -recursive`
-- Validate: `terraform validate`
+- [BACKEND_SETUP.md](BACKEND_SETUP.md) - Backend storage concepts and architecture
+- [README.md](README.md) - Full project documentation
+- [SCAFFOLD_USAGE.md](SCAFFOLD_USAGE.md) - Scaffold script details
+- [.github/copilot-instructions.md](.github/copilot-instructions.md) - Template/module consistency guide

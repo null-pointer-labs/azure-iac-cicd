@@ -755,7 +755,7 @@ main() {
   echo ""
   
   # Step 2: Get environment name
-  echo -e "${BOLD}Environment name${NC} (e.g., cics-dev, cics-uat, prod):"
+  echo -e "${BOLD}Environment name${NC} (e.g., dev, uat, prod):"
   read -r ENV_NAME
   
   if [ -z "$ENV_NAME" ]; then
