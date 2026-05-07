@@ -948,16 +948,17 @@ function Invoke-Main {
     Write-Host "Created files in $outputDir/"
     Get-ChildItem $outputDir -File | ForEach-Object {
         $lineCount = (Get-Content $_.FullName | Measure-Object -Line).Lines
-        Write-Success "$($_.Name) ($lineCount lines)"
+        Write-Success ("{0} ({1} lines)" -f $_.Name, $lineCount)
     }
     Write-Host ""
     Write-Host "Next steps:"
     Write-Host "  1. Review generated files in $outputDir/"
     Write-Host "  2. Update TODO placeholders in terraform.tfvars"
     Write-Host "  3. Update backend.hcl with your Azure backend configuration"
-    Write-Host "  4. Run: cd $outputDir && terraform init -backend-config=backend.hcl"
-    Write-Host "  5. Run: terraform plan"
-    Write-Host "  6. Run: terraform apply"
+    Write-Host "  4. Run: cd $outputDir"
+    Write-Host "  5. Run: terraform init -backend-config=backend.hcl"
+    Write-Host "  6. Run: terraform plan"
+    Write-Host "  7. Run: terraform apply"
     Write-Host ""
 }
 
@@ -968,6 +969,6 @@ function Invoke-Main {
 try {
     Invoke-Main
 } catch {
-    Write-Error "An error occurred: $_"
+    Write-ColorOutput "✗ An error occurred: $($_.Exception.Message)" -Color $Colors.Red
     exit 1
 }
