@@ -1,0 +1,31 @@
+# ===================================================================
+# __ENV_NAME__ Environment - Terraform Variables
+# ===================================================================
+# Configuration values for the __ENV_NAME__ environment
+# IMPORTANT: Update these values according to your requirements
+# ===================================================================
+
+# Project Configuration
+project_name = "__PROJECT_NAME__"
+environment  = "__ENV_NAME__"
+location     = "Southeast Asia"
+
+# ===================================================================
+# Cross-Subscription Configuration
+# ===================================================================
+# IMPORTANT: Replace these placeholders with your actual subscription and tenant IDs
+workload_subscription_id = "TODO-YOUR-WORKLOAD-SUBSCRIPTION-ID" # Subscription where resources deploy
+tenant_id                = "TODO-YOUR-TENANT-ID"                 # Azure AD tenant ID
+
+# Network Configuration
+vnet_address_space         = ["10.10.0.0/16"]
+pe_subnet_address_prefixes = ["10.10.2.0/24"]
+
+# Resource Tags
+# Apply consistent tags for resource management and cost tracking
+tags = {
+  Environment = "__ENV_NAME_UPPER__"
+  Project     = "__PROJECT_NAME__"
+  ManagedBy   = "Terraform"
+  CreatedDate = "__DATE__"
+}

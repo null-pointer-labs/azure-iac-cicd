@@ -25,7 +25,6 @@ Terraform `azurerm` provider version 4.0 has a limitation: the `data_endpoint_en
 - **Per registry, location, and tenant (TENANT-REUSE)** ← Desired
 
 But Terraform doesn't expose this setting yet.
-
 ## Solution
 
 Added a `null_resource` to the ACR module that uses **Azure REST API** to configure tenant-reuse scope after the ACR is created.
