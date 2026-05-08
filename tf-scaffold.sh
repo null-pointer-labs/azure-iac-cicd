@@ -229,7 +229,7 @@ add_private_dns_modules() {
   # Check if any module with Private Endpoint support is selected
   for module in "${SELECTED_MODULES[@]}"; do
     case "$module" in
-      azure-acr|azure-keyvault|azure-cosmosdb)
+      azure-acr|azure-keyvault|azure-cosmosdb|azure-redis)
         has_pe_modules=true
         break
         ;;
@@ -368,6 +368,46 @@ module "cosmosdb_dns_standalone" {
 EOF
     fi
   fi
+  
+  if is_module_selected "azure-redis"; then
+    echo "# Azure Redis Cache - Private DNS"
+    if [ "$USE_EXISTING_PRIVATE_DNS" = "true" ]; then
+      cat << 'EOF'
+module "redis_dns_existing" {
+  count  = var.use_existing_private_dns && var.redis_enable_private_endpoint ? 1 : 0
+  source = "../../modules/private-dns-registration"
+
+  providers = {
+    azurerm.dns_sub = azurerm.dns_sub
+  }
+
+  private_ip_address  = module.redis_cache.pe_private_ip
+  dns_zone_name       = "privatelink.redis.cache.windows.net"
+  record_name         = var.redis_name
+  dns_zone_rg         = var.dns_zone_rg
+  dns_subscription_id = var.dns_subscription_id
+  tags                = var.tags
+}
+
+EOF
+    else
+      cat << 'EOF'
+module "redis_dns_standalone" {
+  count  = !var.use_existing_private_dns && var.redis_enable_private_endpoint ? 1 : 0
+  source = "../../modules/private-dns-standalone"
+
+  private_ip_address = module.redis_cache.pe_private_ip
+  dns_zone_name      = "privatelink.redis.cache.windows.net"
+  record_name        = var.redis_name
+  dns_zone_rg        = var.dns_zone_rg
+  vnet_id            = azurerm_virtual_network.main.id
+  location           = var.location
+  tags               = var.tags
+}
+
+EOF
+    fi
+  fi
 }
 # Add Private DNS variable declarations
 add_private_dns_variables() {
@@ -376,7 +416,7 @@ add_private_dns_variables() {
   # Check if any module with Private Endpoint support is selected
   for module in "${SELECTED_MODULES[@]}"; do
     case "$module" in
-      azure-acr|azure-keyvault|azure-cosmosdb)
+      azure-acr|azure-keyvault|azure-cosmosdb|azure-redis)
         has_pe_modules=true
         break
         ;;
@@ -426,7 +466,7 @@ add_private_dns_tfvars() {
   # Check if any module with Private Endpoint support is selected
   for module in "${SELECTED_MODULES[@]}"; do
     case "$module" in
-      azure-acr|azure-keyvault|azure-cosmosdb)
+      azure-acr|azure-keyvault|azure-cosmosdb|azure-redis)
         has_pe_modules=true
         break
         ;;
@@ -464,12 +504,56 @@ add_private_dns_tfvars() {
 # Generate main.tf by assembling base + selected modules
 generate_main_tf() {
   local output_file="$1"
+  local infra_dir="${TEMPLATES_DIR}/infrastructure"
   
-  # Start with base infrastructure
-  cat "${BASE_TEMPLATES}/main.tf" > "$output_file"
+  # First, add resource groups based on selected modules
+  # Network RG is always included (VNet is always needed)
+  if [ -d "$infra_dir" ]; then
+    local network_rg="${infra_dir}/azure-rg-network.tf"
+    if [ -f "$network_rg" ]; then
+      cat "$network_rg" > "$output_file"
+    fi
+    
+    # App RG - include if any app-related module is selected
+    local needs_app_rg=false
+    for module in "azure-aks" "azure-keyvault" "azure-vm" "azure-acr"; do
+      if is_module_selected "$module"; then
+        needs_app_rg=true
+        break
+      fi
+    done
+    
+    if [ "$needs_app_rg" = true ]; then
+      local app_rg="${infra_dir}/azure-rg-app.tf"
+      if [ -f "$app_rg" ]; then
+        echo "" >> "$output_file"
+        cat "$app_rg" >> "$output_file"
+      fi
+    fi
+    
+    # Data RG - include if cosmosdb or redis module is selected
+    local needs_data_rg=false
+    for module in "azure-cosmosdb" "azure-redis"; do
+      if is_module_selected "$module"; then
+        needs_data_rg=true
+        break
+      fi
+    done
+    
+    if [ "$needs_data_rg" = true ]; then
+      local data_rg="${infra_dir}/azure-rg-data.tf"
+      if [ -f "$data_rg" ]; then
+        echo "" >> "$output_file"
+        cat "$data_rg" >> "$output_file"
+      fi
+    fi
+  fi
+  
+  # Now add base infrastructure (VNet, subnets)
+  echo "" >> "$output_file"
+  cat "${BASE_TEMPLATES}/main.tf" >> "$output_file"
   
   # Append module-specific infrastructure blocks conditionally
-  local infra_dir="${TEMPLATES_DIR}/infrastructure"
   if [ -d "$infra_dir" ]; then
     # Include AKS subnet only if azure-aks module is selected
     if is_module_selected "azure-aks"; then
@@ -788,7 +872,7 @@ main() {
   local needs_dns=false
   for module in "${SELECTED_MODULES[@]}"; do
     case "$module" in
-      azure-acr|azure-keyvault|azure-cosmosdb)
+      azure-acr|azure-keyvault|azure-cosmosdb|azure-redis)
         needs_dns=true
         break
         ;;

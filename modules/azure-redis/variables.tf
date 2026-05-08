@@ -83,6 +83,12 @@ variable "vnet_id" {
   default     = null
 }
 
+variable "pe_resource_group_name" {
+  description = "Name of the resource group where the Private Endpoint will be created (typically the network RG)"
+  type        = string
+  default     = null
+}
+
 variable "subnet_id" {
   description = "ID of the subnet for VNet integration (Premium SKU only)"
   type        = string

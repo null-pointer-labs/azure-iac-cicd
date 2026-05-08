@@ -8,8 +8,8 @@ module "virtual_machines" {
   
   vm_name_prefix      = "vm-__PROJECT_NAME__-__ENV_NAME__"
   vm_count            = var.vm_count
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.app.location
+  resource_group_name = azurerm_resource_group.app.name
   vm_size             = var.vm_size
   subnet_id           = azurerm_subnet.pe.id
   

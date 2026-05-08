@@ -68,12 +68,7 @@ output "private_endpoint_id" {
   value       = var.enable_private_endpoint ? azurerm_private_endpoint.redis[0].id : null
 }
 
-output "private_endpoint_ip" {
+output "pe_private_ip" {
   description = "Private IP address of the Private Endpoint (if created)"
   value       = var.enable_private_endpoint ? azurerm_private_endpoint.redis[0].private_service_connection[0].private_ip_address : null
-}
-
-output "private_dns_zone_id" {
-  description = "ID of the Private DNS Zone (if created)"
-  value       = var.enable_private_endpoint ? azurerm_private_dns_zone.redis[0].id : null
 }

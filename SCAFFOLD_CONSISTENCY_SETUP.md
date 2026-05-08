@@ -23,7 +23,7 @@ Added comprehensive maintenance guidance:
 
 ## 2. Terraform Scaffold Consistency Skill
 
-**File**: `~/.agents/skills/terraform-scaffold-consistency/SKILL.md`
+**File**: [.agents/skills/terraform-scaffold-consistency/SKILL.md](.agents/skills/terraform-scaffold-consistency/SKILL.md)
 
 Created a dedicated skill that is automatically triggered when working with:
 - Templates
@@ -120,7 +120,7 @@ Created a dedicated skill that is automatically triggered when working with:
 
 ```
 .github/copilot-instructions.md     ← Copilot guidance (in repo)
-~/.agents/skills/terraform-scaffold-consistency/SKILL.md  ← Skill file (global)
+.agents/skills/terraform-scaffold-consistency/SKILL.md  ← Skill file (repo-local, tracked)
 tf-scaffold.sh                      ← Main scaffold script
 templates/base/*                    ← Base infrastructure
 templates/infrastructure/*          ← Conditional infrastructure
@@ -221,8 +221,8 @@ Project Documentation:
     └── PRIVATE_DNS_ARCHITECTURE.md     ← Architecture diagrams
 
 Skill Documentation:
-└── ~/.agents/skills/terraform-scaffold-consistency/
-    └── SKILL.md                        ← Skill definition and workflows
+└── .agents/skills/terraform-scaffold-consistency/
+    └── SKILL.md                        ← Skill definition and workflows (repo-local)
 ```
 
 ## Success Metrics

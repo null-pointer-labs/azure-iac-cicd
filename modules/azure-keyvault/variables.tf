@@ -100,6 +100,12 @@ variable "vnet_id" {
   default     = null
 }
 
+variable "pe_resource_group_name" {
+  description = "Name of the resource group where the Private Endpoint will be created (typically the network RG)"
+  type        = string
+  default     = null
+}
+
 variable "public_network_access_enabled" {
   description = "Enable public network access to the Key Vault (recommended: false when using Private Endpoints)"
   type        = bool

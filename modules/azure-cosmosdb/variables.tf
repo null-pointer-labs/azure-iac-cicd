@@ -227,7 +227,11 @@ variable "private_endpoint_subnet_id" {
   type        = string
   default     = null
 }
-
+variable "pe_resource_group_name" {
+  description = "Name of the resource group where the Private Endpoint will be created (typically the network RG)"
+  type        = string
+  default     = null
+}
 variable "create_private_dns_zone" {
   description = "Create and configure private DNS zone for private endpoint resolution"
   type        = bool

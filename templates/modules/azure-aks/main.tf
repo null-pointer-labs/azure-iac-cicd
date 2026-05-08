@@ -8,8 +8,8 @@ module "aks_cluster" {
   source = "../../modules/azure-aks"
 
   aks_name            = var.aks_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.app.location
+  resource_group_name = azurerm_resource_group.app.name
   dns_prefix          = var.aks_dns_prefix
   sku_tier            = var.aks_sku_tier
   kubernetes_version  = var.aks_kubernetes_version

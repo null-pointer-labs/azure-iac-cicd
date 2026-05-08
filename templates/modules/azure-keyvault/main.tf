@@ -7,8 +7,8 @@ module "key_vault" {
   source = "../../modules/azure-keyvault"
 
   keyvault_name       = var.keyvault_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.app.location
+  resource_group_name = azurerm_resource_group.app.name
   sku_name            = var.keyvault_sku_name
 
   # Security Configuration
@@ -18,6 +18,7 @@ module "key_vault" {
   # Private Endpoint configuration
   enable_private_endpoint = var.keyvault_enable_private_endpoint
   pe_subnet_id            = var.keyvault_enable_private_endpoint ? azurerm_subnet.pe.id : null
+  pe_resource_group_name  = var.keyvault_enable_private_endpoint ? azurerm_resource_group.network.name : null
   vnet_id                 = var.keyvault_enable_private_endpoint ? azurerm_virtual_network.main.id : null
 
   # Apply environment tags

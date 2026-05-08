@@ -114,7 +114,7 @@ resource "azurerm_private_endpoint" "cosmosdb" {
 
   name                = "${var.cosmosdb_account_name}-pe"
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = coalesce(var.pe_resource_group_name, var.resource_group_name)
   subnet_id           = var.private_endpoint_subnet_id
 
   private_service_connection {

@@ -81,7 +81,7 @@ Updated guidance documents to reflect correct module name mappings:
 
 **Files Updated**:
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) - Added module name mapping section
-- `~/.agents/skills/terraform-scaffold-consistency/SKILL.md` - Added module name mapping warnings
+- [.agents/skills/terraform-scaffold-consistency/SKILL.md](.agents/skills/terraform-scaffold-consistency/SKILL.md) - Added module name mapping warnings
 
 **Added Section**:
 ```markdown
@@ -215,7 +215,7 @@ Success! The configuration is valid.
 
 ### Documentation
 - ✅ [.github/copilot-instructions.md](.github/copilot-instructions.md) - Added module mapping section
-- ✅ `~/.agents/skills/terraform-scaffold-consistency/SKILL.md` - Added module mapping warnings
+- ✅ [.agents/skills/terraform-scaffold-consistency/SKILL.md](.agents/skills/terraform-scaffold-consistency/SKILL.md) - Added module mapping warnings
 
 ## Impact on Existing Projects
 

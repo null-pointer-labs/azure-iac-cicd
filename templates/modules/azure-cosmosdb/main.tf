@@ -7,8 +7,8 @@ module "cosmos_db" {
   source = "../../modules/azure-cosmosdb"
 
   cosmosdb_account_name = var.cosmosdb_account_name
-  location              = azurerm_resource_group.main.location
-  resource_group_name   = azurerm_resource_group.main.name
+  location              = azurerm_resource_group.data.location
+  resource_group_name   = azurerm_resource_group.data.name
 
   # Throughput Configuration
   throughput_mode = var.cosmosdb_throughput_mode
@@ -30,6 +30,7 @@ module "cosmos_db" {
   public_network_access_enabled = var.cosmosdb_public_network_access_enabled
   enable_private_endpoint       = var.cosmosdb_enable_private_endpoint
   private_endpoint_subnet_id    = var.cosmosdb_enable_private_endpoint ? azurerm_subnet.pe.id : null
+  pe_resource_group_name        = var.cosmosdb_enable_private_endpoint ? azurerm_resource_group.network.name : null
   vnet_id                       = var.cosmosdb_enable_private_endpoint ? azurerm_virtual_network.main.id : null
 
   # Apply environment tags

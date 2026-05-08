@@ -42,6 +42,12 @@ variable "vnet_id" {
   default     = null
 }
 
+variable "pe_resource_group_name" {
+  description = "Name of the resource group where the Private Endpoint will be created (typically the network RG)"
+  type        = string
+  default     = null
+}
+
 variable "sku" {
   description = "SKU tier for the container registry (Basic, Standard, or Premium). Premium is required for Private Endpoints."
   type        = string

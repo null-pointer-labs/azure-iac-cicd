@@ -82,7 +82,7 @@ resource "azurerm_private_endpoint" "redis" {
 
   name                = "pe-${var.redis_name}"
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = coalesce(var.pe_resource_group_name, var.resource_group_name)
   subnet_id           = var.pe_subnet_id
 
   private_service_connection {
@@ -91,45 +91,6 @@ resource "azurerm_private_endpoint" "redis" {
     subresource_names              = ["redisCache"]
     is_manual_connection           = false
   }
-
-  tags = var.tags
-}
-
-# -------------------------------------------------------------------
-# Private DNS Zone (Optional)
-# -------------------------------------------------------------------
-# Creates a Private DNS Zone for name resolution of the Private Endpoint
-resource "azurerm_private_dns_zone" "redis" {
-  count = var.enable_private_endpoint ? 1 : 0
-
-  name                = "privatelink.redis.cache.windows.net"
-  resource_group_name = var.resource_group_name
-
-  tags = var.tags
-}
-
-# Link Private DNS Zone to VNet
-resource "azurerm_private_dns_zone_virtual_network_link" "redis" {
-  count = var.enable_private_endpoint ? 1 : 0
-
-  name                  = "pdnslink-${var.redis_name}"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.redis[0].name
-  virtual_network_id    = var.vnet_id
-  registration_enabled  = false
-
-  tags = var.tags
-}
-
-# DNS A Record for Private Endpoint
-resource "azurerm_private_dns_a_record" "redis" {
-  count = var.enable_private_endpoint ? 1 : 0
-
-  name                = var.redis_name
-  zone_name           = azurerm_private_dns_zone.redis[0].name
-  resource_group_name = var.resource_group_name
-  ttl                 = 300
-  records             = [azurerm_private_endpoint.redis[0].private_service_connection[0].private_ip_address]
 
   tags = var.tags
 }
