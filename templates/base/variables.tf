@@ -38,13 +38,19 @@ variable "tenant_id" {
 variable "vnet_address_space" {
   description = "Address space for the Virtual Network"
   type        = list(string)
-  default     = ["10.10.0.0/16"]
+  default     = ["172.16.200.0/22"]
 }
 
-variable "pe_subnet_address_prefixes" {
-  description = "Address prefixes for the Private Endpoint subnet"
+variable "app_subnet_address_prefixes" {
+  description = "Address prefixes for the App subnet (ACR, KeyVault, VM)"
   type        = list(string)
-  default     = ["10.10.2.0/24"]
+  default     = ["172.16.200.0/26"]
+}
+
+variable "data_subnet_address_prefixes" {
+  description = "Address prefixes for the Data subnet (CosmosDB, Redis)"
+  type        = list(string)
+  default     = ["172.16.200.64/26"]
 }
 
 variable "tags" {

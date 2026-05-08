@@ -17,7 +17,7 @@ module "key_vault" {
 
   # Private Endpoint configuration
   enable_private_endpoint = var.keyvault_enable_private_endpoint
-  pe_subnet_id            = var.keyvault_enable_private_endpoint ? azurerm_subnet.pe.id : null
+  pe_subnet_id            = var.keyvault_enable_private_endpoint ? azurerm_subnet.app.id : null
   pe_resource_group_name  = var.keyvault_enable_private_endpoint ? azurerm_resource_group.network.name : null
   vnet_id                 = var.keyvault_enable_private_endpoint ? azurerm_virtual_network.main.id : null
 

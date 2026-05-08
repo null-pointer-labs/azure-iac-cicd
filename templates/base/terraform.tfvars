@@ -18,8 +18,9 @@ workload_subscription_id = "TODO-YOUR-WORKLOAD-SUBSCRIPTION-ID" # Subscription w
 tenant_id                = "TODO-YOUR-TENANT-ID"                 # Azure AD tenant ID
 
 # Network Configuration
-vnet_address_space         = ["10.10.0.0/16"]
-pe_subnet_address_prefixes = ["10.10.2.0/24"]
+vnet_address_space            = ["172.16.200.0/22"]
+app_subnet_address_prefixes   = ["172.16.200.0/26"]
+data_subnet_address_prefixes  = ["172.16.200.64/26"]
 
 # Resource Tags
 # Apply consistent tags for resource management and cost tracking

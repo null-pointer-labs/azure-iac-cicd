@@ -22,10 +22,18 @@ resource "azurerm_virtual_network" "main" {
 # -------------------------------------------------------------------
 # Subnets
 # -------------------------------------------------------------------
-# Private Endpoint Subnet - for PaaS services (ACR, Storage, etc.)
-resource "azurerm_subnet" "pe" {
-  name                 = "snet-${var.project_name}-${var.environment}-pe"
+# App Subnet - for app-related services (ACR, KeyVault, VM)
+resource "azurerm_subnet" "app" {
+  name                 = "snet-${var.project_name}-${var.environment}-app"
   resource_group_name  = azurerm_resource_group.network.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = var.pe_subnet_address_prefixes
+  address_prefixes     = var.app_subnet_address_prefixes
+}
+
+# Data Subnet - for data services (CosmosDB, Redis)
+resource "azurerm_subnet" "data" {
+  name                 = "snet-${var.project_name}-${var.environment}-data"
+  resource_group_name  = azurerm_resource_group.network.name
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = var.data_subnet_address_prefixes
 }

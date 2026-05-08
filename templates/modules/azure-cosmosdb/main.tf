@@ -29,7 +29,7 @@ module "cosmos_db" {
   # Network Configuration
   public_network_access_enabled = var.cosmosdb_public_network_access_enabled
   enable_private_endpoint       = var.cosmosdb_enable_private_endpoint
-  private_endpoint_subnet_id    = var.cosmosdb_enable_private_endpoint ? azurerm_subnet.pe.id : null
+  private_endpoint_subnet_id    = var.cosmosdb_enable_private_endpoint ? azurerm_subnet.data.id : null
   pe_resource_group_name        = var.cosmosdb_enable_private_endpoint ? azurerm_resource_group.network.name : null
   vnet_id                       = var.cosmosdb_enable_private_endpoint ? azurerm_virtual_network.main.id : null
 

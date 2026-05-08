@@ -1,2 +1,2 @@
 
-aks_subnet_address_prefixes = ["10.10.3.0/24"]
+aks_subnet_address_prefixes = ["172.16.202.0/23"]

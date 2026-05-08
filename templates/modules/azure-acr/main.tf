@@ -13,7 +13,7 @@ module "container_registry" {
 
   # Private Endpoint configuration
   enable_private_endpoint = var.acr_enable_private_endpoint
-  pe_subnet_id            = azurerm_subnet.pe.id
+  pe_subnet_id            = azurerm_subnet.app.id
   pe_resource_group_name  = azurerm_resource_group.network.name
   vnet_id                 = azurerm_virtual_network.main.id
 

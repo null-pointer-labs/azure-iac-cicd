@@ -11,7 +11,7 @@ module "virtual_machines" {
   location            = azurerm_resource_group.app.location
   resource_group_name = azurerm_resource_group.app.name
   vm_size             = var.vm_size
-  subnet_id           = azurerm_subnet.pe.id
+  subnet_id           = azurerm_subnet.app.id
   
   admin_username      = var.admin_username
   ssh_public_key      = var.ssh_public_key
