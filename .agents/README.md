@@ -85,6 +85,6 @@ To add a new skill to this repository:
 
 ## References
 
-- [SCAFFOLD_CONSISTENCY_SETUP.md](../SCAFFOLD_CONSISTENCY_SETUP.md) - Setup documentation
+- [ARCHITECTURE.md](../ARCHITECTURE.md) - Scaffold and architecture documentation
 - [.github/copilot-instructions.md](../.github/copilot-instructions.md) - Copilot context instructions
 - [GitHub Copilot Skills Documentation](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot)

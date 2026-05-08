@@ -2,7 +2,14 @@
 
 This repository contains Terraform configurations for deploying Azure infrastructure using a modular, environment-based approach with **cross-subscription state management**. The project separates state storage (management subscription) from workload resources (workload subscription) and uses Azure AD authentication for secure state access.
 
-## 📁 Project Structure
+## � Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Get started quickly with your first deployment
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Learn how the scaffolding system works and networking architecture
+- **[BACKEND_SETUP.md](BACKEND_SETUP.md)** - Configure Terraform state storage in Azure
+- **README.md** (this file) - Complete reference and deployment guide
+
+## �📁 Project Structure
 
 ```
 .
